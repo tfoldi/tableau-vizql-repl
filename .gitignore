@@ -10,3 +10,4 @@ pom.xml.asc
 .hgignore
 .hg/
 /resources/app-tabcmd-latest-jar.jar
+/.idea
