@@ -1,7 +1,7 @@
 (ns tableau-vizql.repl
   (:require [clojure.tools.logging :as log])
   (:gen-class)
-  (:import (com.tableausoftware.tabcmd CommandRegistry CommandLineUtils ResponseException VizqlSession)
+  (:import (com.tableausoftware.tabcmd CommandRegistry CommandLineUtils ResponseException VizqlSession RedirectException)
            (com.tableausoftware.tabcmd.session SessionOptions Session)
            (com.tableausoftware.tabcmd.http HttpUtils)))
 
@@ -24,6 +24,12 @@
     (CommandLineUtils/cleanseCommandLine)
     (CommandLineUtils/parse (SessionOptions/getOptions))))
 
+(defn- log-http-response-exception
+  [exc]
+  (log/error (HttpUtils/getErrorMessageFromResponse (.getRequest exc)))
+  (when (= (class exc) "com.tableausoftware.tabcmd.RedirectException")
+    (log/error ("Unexpected redirect: " (.getRedirectUrl exc)))))
+
 (defn login
   "login to the server"
   [session]
@@ -31,14 +37,17 @@
     (.logout session)
     (.login session)
     (catch ResponseException exc
-      (log/error (HttpUtils/getErrorMessageFromResponse (.getRequest exc)))
+      (log-http-response-exception exc)
       (throw exc))))
 
 (defn open-viz
-  [viz width height]
-  (VizqlSession. session viz width height)
-  [viz]
-  (open-viz viz 800 600))
+  ([session viz width height]
+   (try
+     (VizqlSession. session viz width height)
+     (catch ResponseException exc
+       (log-http-response-exception exc))))
+  ([session viz]
+   (open-viz session viz 800 600)))
 
 (defn session-from-command-line
   [args]
@@ -48,8 +57,8 @@
   "Command line arguments are inherited from tabcmd"
   [& args]
   (log/info "Logging into Tableau Server")
-  ; register tabcmd commands, parse command line arguments and establish
-  ; session
+  (tabcmd-register-commands)
+  ; build and bind session as VizqlSession
   (with-redefs [session (session-from-command-line args)]
     (in-ns 'tableau-vizql.repl)
     (clojure.main/repl)))
