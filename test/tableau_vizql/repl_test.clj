@@ -1,6 +1,6 @@
-(ns tableau-vizql-repl.core-test
+(ns tableau-vizql.repl_test
   (:require [clojure.test :refer :all]
-            [tableau-vizql-repl.core :refer :all]))
+            [tableau-vizql.repl :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."

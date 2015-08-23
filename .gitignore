@@ -11,3 +11,4 @@ pom.xml.asc
 .hg/
 /resources/app-tabcmd-latest-jar.jar
 /.idea
+/resources/*.secret
