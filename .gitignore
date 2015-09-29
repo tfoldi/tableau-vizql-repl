@@ -12,3 +12,4 @@ pom.xml.asc
 /resources/app-tabcmd-latest-jar.jar
 /.idea
 /resources/*.secret
+*.iml

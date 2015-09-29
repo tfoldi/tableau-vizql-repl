@@ -53,6 +53,13 @@
   [args]
   (Session. vizql-session-file (parse-command-line (into [] args))))
 
+(defn vizql-cmd
+  [viz namespace command params]
+  (try
+    (.executeCommand viz namespace command params)
+    (catch ResponseException exc
+      (log-http-response-exception exc))))
+
 (defn -main
   "Command line arguments are inherited from tabcmd"
   [& args]
